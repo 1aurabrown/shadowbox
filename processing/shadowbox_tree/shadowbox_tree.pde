@@ -4,9 +4,9 @@
 OPC opc;
 PImage dot;
 
-int sizeLimit = 90;          // Increase this if it runs too slowly
+int sizeLimit = 200;         // Increase this if it runs too slowly, decrease for more detail
 float animationRate = 0.1;   // How quickly to change animation parameters
-float brightness = 20;
+float brightness = 40;
 
 float paramX = 0;            // Parameter changed with X/Y coordinate of mouse
 float paramY = 0;
@@ -61,17 +61,17 @@ void recursiveTree(float x, float y, float angle, float size, float hue)
 
   x += xStep;
   y += yStep;
-  colorDot(x, y, hue % 100, 50, brightness, size);
+  colorDot(x, y, hue % 100, 80, brightness, size);
   
   x += xStep;
   y += yStep;
-  colorDot(x, y, hue % 100, 50, brightness, size);
+  colorDot(x, y, hue % 100, 80, brightness, size);
   
   float s = radians(paramX);
   float t = radians(paramY);
 
-  recursiveTree(x, y, angle + s + t, size * 0.76, hue + 5);
-  recursiveTree(x, y, angle - s + t, size * 0.76, hue - 5);
+  recursiveTree(x, y, angle + s + t, size * 0.76, hue + 60);
+  recursiveTree(x, y, angle - s + t, size * 0.76, hue - 60);
 }
 
 void draw()
@@ -82,6 +82,6 @@ void draw()
 
   background(0);
 
-  recursiveTree(width/2, height, 0, width * 0.75, paramY);  
+  recursiveTree(width/2, height, 0, width * 0.9, paramY * 0.4);  
 }
 
