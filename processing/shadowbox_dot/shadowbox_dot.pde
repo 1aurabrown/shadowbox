@@ -3,7 +3,7 @@ PImage dot;
 
 void setup()
 {
-  size(300, 300);
+  size(500, 500);
   
   opc = new OPC(this, "127.0.0.1", 7890);
   dot = loadImage("gray-dot.png");
