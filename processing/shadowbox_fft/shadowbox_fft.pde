@@ -1,6 +1,13 @@
-// Some real-time FFT! This visualizes music in the frequency domain using a
-// polar-coordinate particle system. Particle size and radial distance are modulated
-// using a filtered FFT. Color is sampled from an image.
+// A very simple music visualization, using the FFT:
+//    Fast Fourier Transform
+//
+// This is a way to look at music in the frequency domain instead of the time
+// domain. Like a spectrogram. In this example, the spectrum of the music changes
+// the size and radial placement of image textures. Colors are sampled from another
+// image, and used to tint the texture image.
+//
+// This example plays back a recorded track, since it's much harder to get a
+// reliable and detailed spectrum when recording from a microphone.
 
 import ddf.minim.analysis.*;
 import ddf.minim.*;

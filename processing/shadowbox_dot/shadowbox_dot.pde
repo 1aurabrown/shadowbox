@@ -1,3 +1,8 @@
+// A glowing dot you can move with the mouse cursor.
+// Many small LEDs act in unison to make a large virtual flashlight.
+// The texture of the light as it moves comes from a "dot" image,
+// handcrafted in Photoshop to have the desired softness.
+
 OPC opc;
 PImage dot;
 
@@ -26,6 +31,7 @@ void setup()
   opc.ledStrip(64*1 + 13*3, 13, width/2, height/2 + radius, spacing, radians(180), false);  
 }
 
+// This is a function which knows how to draw a copy of the "dot" image with a color tint.
 void colorDot(float x, float y, float hue, float saturation, float brightness, float size)
 {
   blendMode(ADD);
@@ -42,7 +48,11 @@ void colorDot(float x, float y, float hue, float saturation, float brightness, f
 void draw()
 {
   background(0);
+
+  // Outer dim blue dot
   colorDot(mouseX, mouseY, 70, 40, 70, 400);
+
+  // Inner bright yellowish dot
   colorDot(mouseX, mouseY, 20, 95, 90, 100);
 }
 

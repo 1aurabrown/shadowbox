@@ -1,3 +1,9 @@
+// Play a video,
+// mapping an outer ring of pixels to the top layer of LEDs,
+// and an inner ring to the bottom layer of LEDs.
+// This video is a blured slow-motion bicycle ride in San Francisco.
+// Props to Jim Campbell.
+
 import processing.video.*;
 
 OPC opc;

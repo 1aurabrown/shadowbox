@@ -1,5 +1,6 @@
 // Test one strip with 4 * 13 = 52 LEDs.
-// A light will chase down the strip, and the last LED will flash green.
+// Colorful lights will chase down the strip,
+// and the last LED will flash bright green.
 
 int numLeds = 52;
 
