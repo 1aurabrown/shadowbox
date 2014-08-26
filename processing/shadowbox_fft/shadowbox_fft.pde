@@ -9,91 +9,89 @@ OPC opc;
 PImage dot;
 PImage colors;
 Minim minim;
-AudioInput in;
+AudioPlayer music;
 FFT fft;
 float[] fftFilter;
 
 float spin = 0.0002;
-float radiansPerBucket = radians(2);
-float decay = 0.985;
-float opacity = 50;
-float minSize = 0.1;
-float sizeScale = 0.8;
-
-void mapShadowBox()
-{
-  // Represent the upper and lower rings as two side-by-side rings
-
-  int index = 0;
-  int spacing = 4;
-  float radius = spacing * 6.7;
-  float x = width / 4;
-  float y = height / 2;
-  
-  opc.ledStrip(index + 13*0, 13, x - radius, y, spacing, radians(-90), false);
-  opc.ledStrip(index + 13*1, 13, x, y - radius, spacing, radians(0), false);
-  opc.ledStrip(index + 13*2, 13, x + radius, y, spacing, radians(90), false);
-  opc.ledStrip(index + 13*3, 13, x, y + radius, spacing, radians(180), false);
-
-  x = width * 3 / 4;
-  index = index + 64;
-  
-  opc.ledStrip(index + 13*0, 13, x - radius, y, spacing, radians(-90), false);
-  opc.ledStrip(index + 13*1, 13, x, y - radius, spacing, radians(0), false);
-  opc.ledStrip(index + 13*2, 13, x + radius, y, spacing, radians(90), false);
-  opc.ledStrip(index + 13*3, 13, x, y + radius, spacing, radians(180), false);
-}
+float radianStep = radians(35);
+float decay = 0.95;
+float opacity = 200;
+float minSize = 0.3;
+float maxSize = 2.0;
+float gain = 0.5;
+float radiusScale = 0.12;
+float maxRadius = 0.5;
+float sizeScale = 0.4;
 
 void setup()
 {
-  size(400, 200, P3D);
+  size(250, 250);
 
   minim = new Minim(this); 
-
-  // Small buffer size!
-  in = minim.getLineIn(minim.MONO, 512);
-
-  fft = new FFT(in.bufferSize(), in.sampleRate());
+  music = minim.loadFile("iSE - Chilled As A Spider.mp3", 512);
+  music.loop();
+  fft = new FFT(music.bufferSize(), music.sampleRate());
   fftFilter = new float[fft.specSize()];
 
-  dot = loadImage("dot.png");
+  dot = loadImage("ring.png");
   colors = loadImage("colors.png");
 
   // Connect to the local instance of fcserver
   opc = new OPC(this, "127.0.0.1", 7890);
-  mapShadowBox();
+
+  int spacing = 10;               // Number of pixels per LED in strips
+  float radius = spacing * 6.7;   // Distance from strip to center
+    
+  // Make the front ring of LEDs in a large square
+  opc.ledStrip(64*0 + 13*0, 13, width/2 - radius, height/2, spacing, radians(-90), false);
+  opc.ledStrip(64*0 + 13*1, 13, width/2, height/2 - radius, spacing, radians(0), false);
+  opc.ledStrip(64*0 + 13*2, 13, width/2 + radius, height/2, spacing, radians(90), false);
+  opc.ledStrip(64*0 + 13*3, 13, width/2, height/2 + radius, spacing, radians(180), false);
+
+  // Now the back ring, in a smaller inset square
+  spacing = spacing / 2;
+  radius = radius / 2;
+  opc.ledStrip(64*1 + 13*0, 13, width/2 - radius, height/2, spacing, radians(-90), false);
+  opc.ledStrip(64*1 + 13*1, 13, width/2, height/2 - radius, spacing, radians(0), false);
+  opc.ledStrip(64*1 + 13*2, 13, width/2 + radius, height/2, spacing, radians(90), false);
+  opc.ledStrip(64*1 + 13*3, 13, width/2, height/2 + radius, spacing, radians(180), false);  
+}
+
+void colorDot(float x, float y, color c, float size)
+{
+  blendMode(ADD);
+  tint(c);
+  
+  image(dot, x - size/2, y - size/2, size, size); 
+  
+  noTint();
+  blendMode(NORMAL);
 }
 
 void draw()
 {
   background(0);
 
-  fft.forward(in.mix);
+  fft.forward(music.mix);
   for (int i = 0; i < fftFilter.length; i++) {
-    fftFilter[i] = max(fftFilter[i] * decay, log(1 + fft.getBand(i)));
+    fftFilter[i] = max(fftFilter[i] * decay, log(1 + gain * fft.getBand(i)));
   }
  
-  for (int i = 0; i < fftFilter.length; i += 3) {   
- 
-    float size = height * (minSize + sizeScale * fftFilter[i]);
-    PVector center = new PVector(width * (fftFilter[i] * 0.2), 0);
-    center.rotate(millis() * spin + i * radiansPerBucket);
+  int bucket = 1;
+  int number = 0;
+  while (bucket < fftFilter.length) {
 
-    {
-      color rgb = colors.get(int(map(i, 0, fftFilter.length-1, 0, colors.width-1)), colors.height/4);
-      tint(rgb, fftFilter[i] * opacity);
-      blendMode(ADD);
-      image(dot, center.x - size/2 + width * 0.25,
-        center.y - size/2 + height * 0.5, size, size);
-    }
+    float intensity = fftFilter[bucket];
+    float size = height * min(maxSize, (minSize + sizeScale * intensity));
+    PVector center = new PVector(width * min(maxRadius, intensity * radiusScale), 0);
+    center.rotate(millis() * spin + number * radianStep);
 
-    {
-      color rgb = colors.get(int(map(i, 0, fftFilter.length-1, 0, colors.width-1)), colors.height*3/4);
-      tint(rgb, fftFilter[i] * opacity);
-      blendMode(ADD);
-      image(dot, center.x - size/2 + width * 0.75,
-        center.y - size/2 + height * 0.5, size, size);
-    }
+    color c = colors.get(int(map(number, 0, 8, 0, colors.width-1)), 0);
+    colorDot(center.x + width/2, center.y + height/2, c, size);
+    
+    number = number + 1;
+    bucket = bucket * 2;
   }
 }
 
