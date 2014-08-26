@@ -8,7 +8,7 @@ PImage dot;
 
 void setup()
 {
-  size(600, 150, P3D);
+  size(600, 150);
 
   // Load a grayscale picture of a fuzzy dot. We layer this image
   // and tint it with different colors to draw our scene for the LEDs.
